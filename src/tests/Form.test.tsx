@@ -1,92 +1,136 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import React from 'react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { RecoilRoot } from 'recoil';
-import { textSpanEnd } from 'typescript';
 import Form from '../components/Form';
 
-test('Quando a entrada está vazia, novos participantes não podem ser adicionados', () => {
-  render(
-    <RecoilRoot>
-      <Form />
-    </RecoilRoot>
-  );
+describe('O comportamento do formulário', () => {
+  test('Quando a entrada está vazia, novos participantes não podem ser adicionados', () => {
+    render(
+      <RecoilRoot>
+        <Form />
+      </RecoilRoot>
+    );
 
-  // Encontra no DOM o input
-  const input = screen.getByPlaceholderText(
-    'Insira os nomes dos participantes'
-  );
+    // Encontra no DOM o input
+    const input = screen.getByPlaceholderText(
+      'Insira os nomes dos participantes'
+    );
 
-  // Encontra o botão
-  const button = screen.getByRole('button');
+    // Encontra o botão
+    const button = screen.getByRole('button');
 
-  // Garantir que o input esteja no documento
-  expect(input).toBeInTheDocument();
-  // Garantir que o botão esteja desabilitado
-  expect(button).toBeDisabled();
-});
-
-test('Adicionar um participante caso exista um nome preenchido', () => {
-  render(
-    <RecoilRoot>
-      <Form />
-    </RecoilRoot>
-  );
-
-  // Encontra no DOM o input
-  const input = screen.getByPlaceholderText(
-    'Insira os nomes dos participantes'
-  );
-
-  // Encontra o botão
-  const button = screen.getByRole('button');
-
-  // Inserir um valor no input
-  fireEvent.change(input, {
-    target: {
-      value: 'Lara Croft',
-    },
+    // Garantir que o input esteja no documento
+    expect(input).toBeInTheDocument();
+    // Garantir que o botão esteja desabilitado
+    expect(button).toBeDisabled();
   });
 
-  // clicar no botão de submter
-  fireEvent.click(button);
+  test('Adicionar um participante caso exista um nome preenchido', () => {
+    render(
+      <RecoilRoot>
+        <Form />
+      </RecoilRoot>
+    );
 
-  // garantir que o input esta com foco ativo
-  expect(input).toHaveFocus();
+    // Encontra no DOM o input
+    const input = screen.getByPlaceholderText(
+      'Insira os nomes dos participantes'
+    );
 
-  // garantir que o input não tenha um valor
-  expect(input).toHaveValue('');
-});
+    // Encontra o botão
+    const button = screen.getByRole('button');
 
-test('Nomes duplicados não podem ser adicionados na lista', () => {
-  render(
-    <RecoilRoot>
-      <Form />
-    </RecoilRoot>
-  );
+    // Inserir um valor no input
+    fireEvent.change(input, {
+      target: {
+        value: 'Lara Croft',
+      },
+    });
 
-  const input = screen.getByPlaceholderText(
-    'Insira os nomes dos participantes'
-  );
+    // clicar no botão de submter
+    fireEvent.click(button);
 
-  const button = screen.getByRole('button');
+    // garantir que o input esta com foco ativo
+    expect(input).toHaveFocus();
 
-  fireEvent.change(input, {
-    target: {
-      value: 'Lara Croft',
-    },
+    // garantir que o input não tenha um valor
+    expect(input).toHaveValue('');
   });
 
-  fireEvent.click(button);
+  test('Nomes duplicados não podem ser adicionados na lista', () => {
+    render(
+      <RecoilRoot>
+        <Form />
+      </RecoilRoot>
+    );
 
-  fireEvent.change(input, {
-    target: {
-      value: 'Lara Croft',
-    },
+    const input = screen.getByPlaceholderText(
+      'Insira os nomes dos participantes'
+    );
+
+    const button = screen.getByRole('button');
+
+    fireEvent.change(input, {
+      target: {
+        value: 'Lara Croft',
+      },
+    });
+
+    fireEvent.click(button);
+
+    fireEvent.change(input, {
+      target: {
+        value: 'Lara Croft',
+      },
+    });
+
+    fireEvent.click(button);
+
+    const errorMessage = screen.getByRole('alert');
+
+    expect(errorMessage.textContent).toBe(
+      'Nomes duplicadosnão são permitidos!'
+    );
   });
 
-  fireEvent.click(button);
+  test('A mensagem de erro deve sumir após os timers', () => {
+    jest.useFakeTimers();
+    render(
+      <RecoilRoot>
+        <Form />
+      </RecoilRoot>
+    );
 
-  const errorMessage = screen.getByRole('alert');
+    const input = screen.getByPlaceholderText(
+      'Insira os nomes dos participantes'
+    );
 
-  expect(errorMessage.textContent).toBe('Nomes duplicadosnão são permitidos!');
+    const button = screen.getByRole('button');
+
+    fireEvent.change(input, {
+      target: {
+        value: 'Lara Croft',
+      },
+    });
+
+    fireEvent.click(button);
+
+    fireEvent.change(input, {
+      target: {
+        value: 'Lara Croft',
+      },
+    });
+
+    fireEvent.click(button);
+
+    let errorMessage = screen.queryByRole('alert');
+
+    expect(errorMessage).toBeInTheDocument();
+
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    errorMessage = screen.queryByRole('alert');
+    expect(errorMessage).toBeNull();
+  });
 });
