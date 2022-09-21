@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
+import { RecoilRoot } from 'recoil';
 import Form from '../components/Form';
 
 test('Quando a entrada está vazia, novos participantes não podem ser adicionados', () => {
@@ -20,7 +21,11 @@ test('Quando a entrada está vazia, novos participantes não podem ser adicionad
 });
 
 test('Adicionar um participante caso exista um nome preenchido', () => {
-  render(<Form />);
+  render(
+    <RecoilRoot>
+      <Form />
+    </RecoilRoot>
+  );
 
   // Encontra no DOM o input
   const input = screen.getByPlaceholderText(
