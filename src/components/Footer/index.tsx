@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useListParticipants } from '../../state/hooks/useListParticipants';
+import { useSorteador } from '../../state/hooks/useSorteador';
 import './Footer.css';
 
 function Footer() {
@@ -8,7 +9,10 @@ function Footer() {
 
   const navigate = useNavigate();
 
+  const sortear = useSorteador();
+
   const start = () => {
+    sortear();
     navigate('/sorteio');
   };
 
